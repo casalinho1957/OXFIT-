@@ -3,7 +3,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>OxFit - Avaliação de Força Completa</title>
+  <title>OxFit - Avaliação de Força</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,13 +35,17 @@
     .grau-4m   { background-color: #f39c12; }
     .grau-3    { background-color: #e67e22; }
     .grau-2    { background-color: #e74c3c; }
-    .grau-1, 
+    .grau-1,
     .grau-0    { background-color: #c0392b; }
+    svg {
+      width: 100%;
+      max-height: 600px;
+    }
   </style>
 </head>
 <body>
 
-<h1>Avaliação Completa de Força Muscular - Escala de Oxford</h1>
+<h1>Avaliação de Força Muscular - Escala de Oxford</h1>
 <table id="tabela">
   <thead>
     <tr>
@@ -53,57 +57,40 @@
       <th>Força Direita (%)</th>
       <th>Força Esquerda (%)</th>
       <th>Interpretação</th>
-      <th>Explicação Clínica</th>
     </tr>
   </thead>
   <tbody>
-    <!-- Movimentos adicionados -->
-    <script>
-      const movimentos = [
-        "Quadríceps (Extensão do Joelho)",
-        "Isquiotibiais (Flexão do Joelho)",
-        "Tibial Anterior (Dorsiflexão)",
-        "Gastrocnêmio (Plantiflexão)",
-        "Glúteo Máximo (Extensão do Quadril)",
-        "Glúteo Médio (Abdução do Quadril)",
-        "Adutores (Adução do Quadril)",
-        "Iliopsoas (Flexão do Quadril)",
-        "Deltoide (Abdução do Ombro)",
-        "Bíceps Braquial (Flexão do Cotovelo)",
-        "Tríceps Braquial (Extensão do Cotovelo)",
-        "Punho (Extensão)",
-        "Punho (Flexão)"
-      ];
-
-      movimentos.forEach((mov, idx) => {
-        document.write(`
-          <tr>
-            <td>${mov}</td>
-            <td><input type="number" min="0" max="5" step="0.5" value="5" onchange="atualizar(this)"></td>
-            <td><input type="number" min="0" max="5" step="0.5" value="5" onchange="atualizar(this)"></td>
-            <td class="color-box"></td>
-            <td class="color-box"></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-        `);
-      });
-    </script>
+    <!-- As linhas de cada músculo devem ser adicionadas aqui -->
+    <!-- Exemplo para quadríceps (repita para cada grupo): -->
+    <tr>
+      <td>Quadríceps</td>
+      <td><input type="number" min="0" max="5" step="0.5" value="5" onchange="atualizar(this)"></td>
+      <td><input type="number" min="0" max="5" step="0.5" value="5" onchange="atualizar(this)"></td>
+      <td class="color-box" id="colorD0"></td>
+      <td class="color-box" id="colorE0"></td>
+      <td id="percentD0"></td>
+      <td id="percentE0"></td>
+      <td id="interp0"></td>
+    </tr>
+    <!-- Continue para os demais músculos (isquiotibiais, glúteo, etc.) -->
   </tbody>
 </table>
 
+<!-- Aqui você cola o conteúdo SVG inline com os ids configurados -->
+
+<button onclick="exportarImagem()" style="padding: 10px 20px; font-size: 16px; margin-top: 20px;">📸 Exportar como Imagem</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const graus = {
-  5:   {classe: "grau-5",  texto: "Força normal",            perc: 100, explica:"Mantenha treino atual."},
-  4.5: {classe: "grau-4p", texto: "Quase normal",            perc: 90,  explica:"Leve reforço com progressão."},
-  4:   {classe: "grau-4",  texto: "Déficit leve",            perc: 80,  explica:"Reforço muscular recomendado."},
-  3.5: {classe: "grau-4m", texto: "Déficit leve/moderado",   perc: 65,  explica:"Exercícios específicos necessários."},
-  3:   {classe: "grau-3",  texto: "Déficit moderado",        perc: 50,  explica:"Treino com carga baixa e progressiva."},
-  2:   {classe: "grau-2",  texto: "Déficit severo",          perc: 35,  explica:"Reabilitação com acompanhamento."},
-  1:   {classe: "grau-1",  texto: "Déficit grave",           perc: 15,  explica:"Foco em ativação muscular assistida."},
-  0:   {classe: "grau-0",  texto: "Sem contração",           perc: 0,   explica:"Avaliação clínica especializada urgente."}
+  5:   {classe: "grau-5",  texto: "Força normal",            perc: 100},
+  4.5: {classe: "grau-4p", texto: "Quase normal",            perc: 90},
+  4:   {classe: "grau-4",  texto: "Déficit leve",            perc: 80},
+  3.5: {classe: "grau-4m", texto: "Déficit leve/moderado",   perc: 65},
+  3:   {classe: "grau-3",  texto: "Déficit moderado",        perc: 50},
+  2:   {classe: "grau-2",  texto: "Déficit severo",          perc: 35},
+  1:   {classe: "grau-1",  texto: "Déficit grave",           perc: 15},
+  0:   {classe: "grau-0",  texto: "Sem contração",           perc: 0}
 };
 
 function getData(val) {
@@ -114,8 +101,16 @@ function getData(val) {
   return graus[val] || graus[0];
 }
 
+function pintarMusculo(musculoID, cor) {
+  for (let i = 0; i < 20; i++) {
+    const el = document.getElementById(`${musculoID}_${i}`);
+    if (el) el.style.fill = cor;
+  }
+}
+
 function atualizar(input) {
   const row = input.parentElement.parentElement;
+  const idx = row.rowIndex - 1;
 
   const valD = parseFloat(row.cells[1].children[0].value) || 0;
   const valE = parseFloat(row.cells[2].children[0].value) || 0;
@@ -130,11 +125,45 @@ function atualizar(input) {
   row.cells[5].textContent = dataD.perc + "%";
   row.cells[6].textContent = dataE.perc + "%";
 
+  let interp = "";
   const diff = Math.abs(dataD.perc - dataE.perc);
-  let interp = diff < 10 ? "Simétrica" : (dataD.perc > dataE.perc ? "Déficit esquerdo" : "Déficit direito");
+
+  if (valD === valE && valD < 5) {
+    interp = `Simetria com déficit (${dataD.texto})`;
+  } else if (valD === valE && valD === 5) {
+    interp = `Força normal bilateral`;
+  } else if (diff < 10) {
+    interp = "Força praticamente simétrica";
+  } else if (dataD.perc > dataE.perc) {
+    interp = `Déficit maior no lado esquerdo (${dataE.texto})`;
+  } else {
+    interp = `Déficit maior no lado direito (${dataD.texto})`;
+  }
 
   row.cells[7].textContent = interp;
-  row.cells[8].textContent = (dataD.perc < dataE.perc ? dataD.explica : dataE.explica);
+
+  // IDs dos músculos na ordem da tabela
+  const musculos = [
+    "quadriceps", "isquiotibiais", "gluteo_lateral", "panturrilha",
+    "deltoide", "biceps", "triceps", "abdome",
+    "lombar", "peitoral", "trapezio", "escapular"
+  ];
+
+  const nome = musculos[idx];
+  if (nome) {
+    pintarMusculo(`${nome}_direito`, getComputedStyle(row.cells[3]).backgroundColor);
+    pintarMusculo(`${nome}_esquerdo`, getComputedStyle(row.cells[4]).backgroundColor);
+  }
+}
+
+function exportarImagem() {
+  const el = document.body;
+  html2canvas(el).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "avaliacao_forca_oxfit.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  });
 }
 
 document.querySelectorAll("input").forEach(el => el.dispatchEvent(new Event("change")));
