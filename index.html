@@ -1,6 +1,5 @@
 # OXFIT-
-<!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html><html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <title>OxFit - Avaliação de Força</title>
@@ -43,9 +42,7 @@
     }
   </style>
 </head>
-<body>
-
-<h1>Avaliação de Força Muscular - Escala de Oxford</h1>
+<body><h1>Avaliação de Força Muscular - Escala de Oxford</h1>
 <table id="tabela">
   <thead>
     <tr>
@@ -60,28 +57,11 @@
     </tr>
   </thead>
   <tbody>
-    <!-- As linhas de cada músculo devem ser adicionadas aqui -->
-    <!-- Exemplo para quadríceps (repita para cada grupo): -->
-    <tr>
-      <td>Quadríceps</td>
-      <td><input type="number" min="0" max="5" step="0.5" value="5" onchange="atualizar(this)"></td>
-      <td><input type="number" min="0" max="5" step="0.5" value="5" onchange="atualizar(this)"></td>
-      <td class="color-box" id="colorD0"></td>
-      <td class="color-box" id="colorE0"></td>
-      <td id="percentD0"></td>
-      <td id="percentE0"></td>
-      <td id="interp0"></td>
-    </tr>
-    <!-- Continue para os demais músculos (isquiotibiais, glúteo, etc.) -->
+    <!-- Aqui você adiciona as linhas da tabela com os inputs de força -->
   </tbody>
-</table>
+</table><!-- Aqui entra o SVG inline com ids como quadriceps_direito_0, etc. --><button onclick="exportarImagem()" style="padding: 10px 20px; font-size: 16px; margin-top: 20px;">📸 Exportar como Imagem</button>
 
-<!-- Aqui você cola o conteúdo SVG inline com os ids configurados -->
-
-<button onclick="exportarImagem()" style="padding: 10px 20px; font-size: 16px; margin-top: 20px;">📸 Exportar como Imagem</button>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script>
 const graus = {
   5:   {classe: "grau-5",  texto: "Força normal",            perc: 100},
   4.5: {classe: "grau-4p", texto: "Quase normal",            perc: 90},
@@ -99,13 +79,6 @@ function getData(val) {
   if (val > 4 && val < 5) return graus[4.5];
   if (val > 3 && val < 4) return graus[3.5];
   return graus[val] || graus[0];
-}
-
-function pintarMusculo(musculoID, cor) {
-  for (let i = 0; i < 20; i++) {
-    const el = document.getElementById(`${musculoID}_${i}`);
-    if (el) el.style.fill = cor;
-  }
 }
 
 function atualizar(input) {
@@ -141,19 +114,6 @@ function atualizar(input) {
   }
 
   row.cells[7].textContent = interp;
-
-  // IDs dos músculos na ordem da tabela
-  const musculos = [
-    "quadriceps", "isquiotibiais", "gluteo_lateral", "panturrilha",
-    "deltoide", "biceps", "triceps", "abdome",
-    "lombar", "peitoral", "trapezio", "escapular"
-  ];
-
-  const nome = musculos[idx];
-  if (nome) {
-    pintarMusculo(`${nome}_direito`, getComputedStyle(row.cells[3]).backgroundColor);
-    pintarMusculo(`${nome}_esquerdo`, getComputedStyle(row.cells[4]).backgroundColor);
-  }
 }
 
 function exportarImagem() {
@@ -166,8 +126,30 @@ function exportarImagem() {
   });
 }
 
-document.querySelectorAll("input").forEach(el => el.dispatchEvent(new Event("change")));
-</script>
+// Clique manual nos músculos
+const coresClicaveis = ["#2ecc71", "#f1c40f", "#e74c3c", "#cccccc"];
+function ativarCliqueMuscular(musculoIdBase) {
+  for (let i = 0; i < 20; i++) {
+    const el = document.getElementById(`${musculoIdBase}_${i}`);
+    if (!el) continue;
+    el.setAttribute("data-click", "0");
+    el.addEventListener("click", function () {
+      let clickAtual = parseInt(el.getAttribute("data-click")) || 0;
+      clickAtual = (clickAtual + 1) % coresClicaveis.length;
+      el.setAttribute("data-click", clickAtual);
+      el.style.fill = coresClicaveis[clickAtual];
+    });
+  }
+}
 
-</body>
+const musculos = [
+  "quadriceps", "isquiotibiais", "gluteo_lateral", "panturrilha",
+  "deltoide", "biceps", "triceps", "abdome",
+  "lombar", "peitoral", "trapezio", "escapular"
+];
+musculos.forEach(m => ativarCliqueMuscular(m + "_direito"));
+musculos.forEach(m => ativarCliqueMuscular(m + "_esquerdo"));
+
+document.querySelectorAll("input").forEach(el => el.dispatchEvent(new Event("change")));
+</script></body>
 </html>
